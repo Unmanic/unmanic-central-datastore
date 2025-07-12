@@ -11,6 +11,30 @@ Unmanic Central Datastore is the backend component of the Unmanic Central platfo
 - **API**  
   The Datastore exposes a RESTful API that supports querying time-series data and logs.
 
+## Deploy With Compose
+
+### First time
+
+1. Clone this repo
+2. Checkout the latest release branch `release/latest`.
+   ```
+   git checkout release/latest
+   ```
+3. Copy `docker-compose.docker.env.example` to `.env`
+   ```
+   cp -fv ./docker-compose.docker.env.example  ./.env
+   ```
+4. Edit the `.env` file as required
+5. Start stack with `docker compose` or `podman compose`
+   ```
+   sudo docker compose -f ./docker-compose.docker.yml up
+   ```
+
+### Updating
+
+To update, simply pull the latest changes from `release/latest` and run step 5 again.
+It would be good to check from time-to-time if the `docker-compose.docker.env.example` has been updated with new config variables.
+
 ## Support
 
 For all support, please join us on [Discord](https://streamingtech.co.nz/discord)
