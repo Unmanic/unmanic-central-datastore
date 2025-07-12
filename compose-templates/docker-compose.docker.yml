@@ -62,6 +62,9 @@ services:
     user: ${PUID:-1000}:${PGID:-1000}
     restart: on-failure
     mem_limit: 1.5g
+    depends_on:
+      postgres:
+        condition: service_healthy
 
     # ENVIRONMENT:
     environment:
