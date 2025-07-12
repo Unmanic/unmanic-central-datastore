@@ -10,3 +10,8 @@ Unmanic Central Datastore is the backend component of the Unmanic Central platfo
   Incoming data imported and indexed depending on the data type.
 - **API**  
   The Datastore exposes a RESTful API that supports querying time-series data and logs.
+
+## Support
+
+For all support, please join us on [Discord](https://streamingtech.co.nz/discord)
+
