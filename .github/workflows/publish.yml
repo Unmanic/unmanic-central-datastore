@@ -55,3 +55,22 @@ jobs:
           echo "Tagging ${{ steps.set-image.outputs.docker_hub_image }}:latest as ${{ steps.set-image.outputs.ghcr_image }}:latest"
           docker tag ${{ steps.set-image.outputs.docker_hub_image }}:latest ${{ steps.set-image.outputs.ghcr_image }}:latest
           docker push ${{ steps.set-image.outputs.ghcr_image }}:latest
+
+  publish-compose-templates:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    needs: [publish-unmanic-central-image]
+    permissions:
+      contents: write
+    steps:
+      # ---
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ---
+      - name: Publish Templates
+        uses: Josh5/action.publish-swarm-stack@841e62adec930611e3c27924982eb85979a42f9c
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          templates_path: compose-templates
+          branch_name: release/latest
