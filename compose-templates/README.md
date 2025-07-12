@@ -23,7 +23,7 @@ These can be deployed on either Docker or Docker Swarm.
 4. Edit the `.env` file as required
 5. Create the directory you have configured as your `DATA_PATH`
    ```
-   mkdir -p $(grep '^DATA_PATH=' .env | cut -d= -f2-)
+   mkdir -p $(grep '^DATA_PATH=' .env | cut -d= -f2-)/postgresql
    ```
 6. Start stack with `docker compose` or `podman compose`
    ```
