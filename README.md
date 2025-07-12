@@ -27,7 +27,11 @@ Unmanic Central Datastore is the backend component of the Unmanic Central platfo
    cp -fv ./docker-compose.docker.env.example  ./.env
    ```
 4. Edit the `.env` file as required
-5. Start stack with `docker compose` or `podman compose`
+5. Create the directory you have configured as your `DATA_PATH`
+   ```
+   mkdir -p $(grep '^DATA_PATH=' .env | cut -d= -f2-)
+   ```
+6. Start stack with `docker compose` or `podman compose`
    ```
    sudo docker compose -f ./docker-compose.docker.yml up
    ```
