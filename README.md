@@ -10,6 +10,8 @@ Unmanic Central Datastore is the backend component of the Unmanic Central platfo
   Incoming data imported and indexed depending on the data type.
 - **API**  
   The Datastore exposes a RESTful API that supports querying time-series data and logs.
+- **Frontend**  
+  A web-based UI available at https://central.unmanic.app/ provides dashboards, configuration screens, and visualizations of your collected data.
 
 ## Deploy With Compose
 
@@ -34,9 +36,11 @@ Unmanic Central Datastore is the backend component of the Unmanic Central platfo
 
 To update, simply pull the latest changes from `release/latest` and run step 5 again.
 As this is a single-commit branch, you can run this command below to always fetch the latest changes.
+
 ```
 git fetch origin release/latest && git reset --hard FETCH_HEAD
 ```
+
 It would be good to check from time-to-time if the `docker-compose.docker.env.example` has been updated with new config variables.
 
 ## Support
