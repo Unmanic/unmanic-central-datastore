@@ -69,7 +69,7 @@ jobs:
 
       # ---
       - name: Publish Templates
-        uses: Josh5/action.publish-swarm-stack@841e62adec930611e3c27924982eb85979a42f9c
+        uses: Josh5/action.publish-swarm-stack@e4a8e6e7f3f2a2b5deac944b31394955e9047278
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           templates_path: compose-templates
