@@ -13,39 +13,9 @@ Unmanic Central Datastore is the backend component of the Unmanic Central platfo
 - **Frontend**  
   A web-based UI available at https://central.unmanic.app/ provides dashboards, configuration screens, and visualizations of your collected data.
 
-## Deploy With Compose
+## Running the Datastore
 
-### First time
-
-1. Clone this repo
-2. Checkout the latest release branch `release/latest`.
-   ```
-   git checkout release/latest
-   ```
-3. Copy `docker-compose.docker.env.example` to `.env`
-   ```
-   cp -fv ./docker-compose.docker.env.example  ./.env
-   ```
-4. Edit the `.env` file as required
-5. Create the directory you have configured as your `DATA_PATH`
-   ```
-   mkdir -p $(grep '^DATA_PATH=' .env | cut -d= -f2-)/postgresql
-   ```
-6. Start stack with `docker compose` or `podman compose`
-   ```
-   sudo docker compose -f ./docker-compose.docker.yml up
-   ```
-
-### Updating
-
-To update, simply pull the latest changes from `release/latest` and run step 5 again.
-As this is a single-commit branch, you can run this command below to always fetch the latest changes.
-
-```
-git fetch origin release/latest && git reset --hard FETCH_HEAD
-```
-
-It would be good to check from time-to-time if the `docker-compose.docker.env.example` has been updated with new config variables.
+See the [Latest Release Branch](https://github.com/Unmanic/unmanic-central-datastore/tree/release/latest) for instructions on how to deploy the Unmanic Central Datastore.
 
 ## Support
 

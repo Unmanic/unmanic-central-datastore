@@ -11,7 +11,15 @@
 #   #-        - node.hostname==<hostname>
 #   #-        - engine.labels.fs-access.<worker-hostname>.mnt==true
 #   #-        - node.role!=manager
-#   PLACEMENT_CONSTRAINT=node.platform.os==linux
+#   DATASTORE_PLACEMENT_CONSTRAINT=node.platform.os==linux
+#   POSTGRES_PLACEMENT_CONSTRAINT=node.platform.os==linux
+#   #@ Host Config
+#   #-  - PUID -
+#   #-    User to run services as.
+#   PUID=1000
+#   #-  - PGID -
+#   #-    Group to run services as.
+#   PGID=1000
 #   #@ Container Paths
 #   #-  - DATA_PATH -
 #   #-    The Path to the config and storage directory
@@ -62,6 +70,7 @@ services:
   #
   datastore:
     image: ghcr.io/unmanic/unmanic-central-datastore:latest
+    user: ${PUID:-1000}:${PGID:-1000}
     deploy:
       replicas: 1
       restart_policy:
@@ -69,7 +78,7 @@ services:
         delay: 10s
       placement:
         constraints:
-          - ${PLACEMENT_CONSTRAINT:-node.platform.os==linux}
+          - ${DATASTORE_PLACEMENT_CONSTRAINT:-node.platform.os==linux}
       resources:
         limits:
           memory: 1.5G
@@ -99,6 +108,7 @@ services:
 
   postgres:
     image: postgres:17
+    user: ${PUID:-1000}:${PGID:-1000}
     healthcheck:
       test: [ 'CMD', 'pg_isready', '-U', 'postgres' ]
       interval: 10s
@@ -111,7 +121,7 @@ services:
         delay: 10s
       placement:
         constraints:
-          - ${PLACEMENT_CONSTRAINT:-node.platform.os==linux}
+          - ${POSTGRES_PLACEMENT_CONSTRAINT:-node.platform.os==linux}
       resources:
         limits:
           memory: 1G
