@@ -53,8 +53,8 @@
 #
 # <script_start>
 #   > mkdir -p \
-#   >     ${DATA_PATH:?}
-#   > sudo chown 10001:10001 ${DATA_PATH:?}
+#   >     ${DATA_PATH:?}/postgresql
+#   > sudo chown 1000:1000 ${DATA_PATH:?}
 #   > sudo chmod 755 \
 #   >     ${DATA_PATH:?}
 #   > echo && echo "$(cd "${DATA_PATH:?}" && pwd)" && ls -la ${DATA_PATH:?}
@@ -66,8 +66,6 @@ networks:
   private-net:
 
 services:
-  # -- Unmanic Central --
-  #
   datastore:
     image: ghcr.io/unmanic/unmanic-central-datastore:latest
     user: ${PUID:-1000}:${PGID:-1000}
@@ -107,10 +105,10 @@ services:
         mode: host
 
   postgres:
-    image: postgres:17
+    image: postgres:17-bookworm
     user: ${PUID:-1000}:${PGID:-1000}
     healthcheck:
-      test: [ 'CMD', 'pg_isready', '-U', 'postgres' ]
+      test: ['CMD', 'pg_isready', '-U', '${UNMANIC_CENTRAL_POSTGRES_USERNAME:?}']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -125,8 +123,6 @@ services:
       resources:
         limits:
           memory: 1G
-        reservations:
-          memory: 500M
 
     # ENVIRONMENT:
     environment:
