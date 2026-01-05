@@ -38,6 +38,12 @@
 #   #-  - UNMANIC_CENTRAL_POSTGRES_PASSWORD -
 #   #-    A strong postgres password.
 #   UNMANIC_CENTRAL_POSTGRES_PASSWORD=CreateYourOwnStrongPasswordHere
+#   #-  - UNMANIC_CENTRAL_POSTGRES_HOST -
+#   #-    The postgres host name.
+#   UNMANIC_CENTRAL_POSTGRES_HOST=postgres
+#   #-  - UNMANIC_CENTRAL_POSTGRES_DB -
+#   #-    The postgres database name.
+#   UNMANIC_CENTRAL_POSTGRES_DB=unmanic
 # <config_end>
 #
 # ---------------
@@ -67,20 +73,6 @@ services:
       postgres:
         condition: service_healthy
 
-    # ENVIRONMENT:
-    environment:
-      UNMANIC_CENTRAL_NAME: ${UNMANIC_CENTRAL_NAME:-Unmanic Central DB}
-      UNMANIC_CENTRAL_PATH_PREFIX: ${UNMANIC_CENTRAL_PATH_PREFIX:-/unmanic}
-      UNMANIC_CENTRAL_DATASTORE_PASSWORD: ${UNMANIC_CENTRAL_DATASTORE_PASSWORD:?}
-      UNMANIC_CENTRAL_POSTGRES_USERNAME: ${UNMANIC_CENTRAL_POSTGRES_USERNAME:?}
-      UNMANIC_CENTRAL_POSTGRES_PASSWORD: ${UNMANIC_CENTRAL_POSTGRES_PASSWORD:?}
-
-    # VOLUMES:
-    volumes:
-      - type: bind
-        source: ${DATA_PATH:?}
-        target: /config/
-
     # NETWORK:
     networks:
       - private-net
@@ -89,16 +81,41 @@ services:
         published: ${UNMANIC_CENTRAL_PORT:-8889}
         protocol: tcp
 
+    # ENVIRONMENT:
+    environment:
+      UNMANIC_CENTRAL_NAME: ${UNMANIC_CENTRAL_NAME:-Unmanic Central DB}
+      UNMANIC_CENTRAL_PATH_PREFIX: ${UNMANIC_CENTRAL_PATH_PREFIX:-/unmanic}
+      UNMANIC_CENTRAL_DATASTORE_PASSWORD: ${UNMANIC_CENTRAL_DATASTORE_PASSWORD:?}
+      UNMANIC_CENTRAL_POSTGRES_USERNAME: ${UNMANIC_CENTRAL_POSTGRES_USERNAME:?}
+      UNMANIC_CENTRAL_POSTGRES_PASSWORD: ${UNMANIC_CENTRAL_POSTGRES_PASSWORD:?}
+      UNMANIC_CENTRAL_POSTGRES_HOST: ${UNMANIC_CENTRAL_POSTGRES_HOST:-postgres}
+      UNMANIC_CENTRAL_POSTGRES_DB: ${UNMANIC_CENTRAL_POSTGRES_DB:-unmanic}
+
+    # VOLUMES:
+    volumes:
+      - type: bind
+        source: ${DATA_PATH:?}
+        target: /config/
+
   postgres:
     image: postgres:17-bookworm
     user: ${PUID:-1000}:${PGID:-1000}
     healthcheck:
-      test: ['CMD', 'pg_isready', '-U', '${UNMANIC_CENTRAL_POSTGRES_USERNAME:?}']
+      test:
+        ['CMD', 'pg_isready', '-U', '${UNMANIC_CENTRAL_POSTGRES_USERNAME:?}']
       interval: 10s
       timeout: 5s
       retries: 5
     restart: on-failure
     mem_limit: 1G
+
+    # NETWORK:
+    networks:
+      - private-net
+    ports:
+      - target: 5432
+        published: ${UNMANIC_CENTRAL_POSTGRES_PORT:-5432}
+        protocol: tcp
 
     # ENVIRONMENT:
     environment:
@@ -111,11 +128,3 @@ services:
       - type: bind
         source: ${DATA_PATH:?}/postgresql
         target: /var/lib/postgresql/data
-
-    # NETWORK:
-    networks:
-      - private-net
-    ports:
-      - target: 5432
-        published: ${UNMANIC_CENTRAL_POSTGRES_PORT:-5432}
-        protocol: tcp
