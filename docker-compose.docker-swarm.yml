@@ -1,0 +1,155 @@
+# ---------------
+# Unmanic Central Datastore on Docker Swarm
+#
+# ---------------
+# Config (paste into portainer advance env text input):
+#
+# <config_start>
+#   #@ Placement
+#   #-    Configure a placement constraint to where the container will be run.
+#   #-    Examples:
+#   #-        - node.hostname==<hostname>
+#   #-        - engine.labels.fs-access.<worker-hostname>.mnt==true
+#   #-        - node.role!=manager
+#   DATASTORE_PLACEMENT_CONSTRAINT=node.platform.os==linux
+#   POSTGRES_PLACEMENT_CONSTRAINT=node.platform.os==linux
+#   #@ Host Config
+#   #-  - PUID -
+#   #-    User to run services as.
+#   PUID=1000
+#   #-  - PGID -
+#   #-    Group to run services as.
+#   PGID=1000
+#   #@ Container Paths
+#   #-  - DATA_PATH -
+#   #-    The Path to the config and storage directory
+#   DATA_PATH=./appdata/unmanic-central-datastore
+#   #@ Service Config
+#   #-  - UNMANIC_CENTRAL_PORT -
+#   #-    The port that will be exposed for the logs datastore
+#   UNMANIC_CENTRAL_PORT=8889
+#   #-  - UNMANIC_CENTRAL_POSTGRES_PORT -
+#   #-    The port that will be exposed fpr postgres
+#   UNMANIC_CENTRAL_POSTGRES_PORT=5432
+#   #-  - UNMANIC_CENTRAL_NAME -
+#   #-    The name for this installation of Unmanic Central Datastore
+#   UNMANIC_CENTRAL_NAME=Unmanic Central DB
+#   #-  - UNMANIC_CENTRAL_PATH_PREFIX -
+#   #-    A path prefix for accessing the datastore URL
+#   UNMANIC_CENTRAL_PATH_PREFIX=/unmanic
+#   #-  - UNMANIC_CENTRAL_DATASTORE_PASSWORD -
+#   #-    A strong basic auth password. The username will always be 'unmanic'.
+#   UNMANIC_CENTRAL_DATASTORE_PASSWORD=CreateYourOwnStrongPasswordHere
+#   #-  - UNMANIC_CENTRAL_POSTGRES_USERNAME -
+#   #-    A postgres username.
+#   UNMANIC_CENTRAL_POSTGRES_USERNAME=postgres
+#   #-  - UNMANIC_CENTRAL_POSTGRES_PASSWORD -
+#   #-    A strong postgres password.
+#   UNMANIC_CENTRAL_POSTGRES_PASSWORD=CreateYourOwnStrongPasswordHere
+#   #-  - UNMANIC_CENTRAL_POSTGRES_HOST -
+#   #-    The postgres host name.
+#   UNMANIC_CENTRAL_POSTGRES_HOST=postgres
+#   #-  - UNMANIC_CENTRAL_POSTGRES_DB -
+#   #-    The postgres database name.
+#   UNMANIC_CENTRAL_POSTGRES_DB=unmanic
+# <config_end>
+#
+# ---------------
+# Setup Script
+#
+# <script_start>
+#   > mkdir -p \
+#   >     ${DATA_PATH:?}/postgresql
+#   > sudo chown 1000:1000 ${DATA_PATH:?}
+#   > sudo chmod 755 \
+#   >     ${DATA_PATH:?}
+#   > echo && echo "$(cd "${DATA_PATH:?}" && pwd)" && ls -la ${DATA_PATH:?}
+# <script_end>
+#
+# ---------------
+---
+networks:
+  private-net:
+
+services:
+  datastore:
+    image: ghcr.io/unmanic/unmanic-central-datastore@sha256:c0ccdc2e6e654e30580deb1a8ca47fd59d173ad0266a52181b9d082a67a2dc59
+    user: ${PUID:-1000}:${PGID:-1000}
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+      placement:
+        constraints:
+          - ${DATASTORE_PLACEMENT_CONSTRAINT:-node.platform.os==linux}
+      resources:
+        limits:
+          memory: 1.5G
+
+    # NETWORK:
+    networks:
+      - private-net
+    ports:
+      - target: 8889
+        published: ${UNMANIC_CENTRAL_PORT:-8889}
+        protocol: tcp
+        mode: host
+
+    # ENVIRONMENT:
+    environment:
+      UNMANIC_CENTRAL_NAME: ${UNMANIC_CENTRAL_NAME:-Unmanic Central DB}
+      UNMANIC_CENTRAL_PATH_PREFIX: ${UNMANIC_CENTRAL_PATH_PREFIX:-/unmanic}
+      UNMANIC_CENTRAL_DATASTORE_PASSWORD: ${UNMANIC_CENTRAL_DATASTORE_PASSWORD:?}
+      UNMANIC_CENTRAL_POSTGRES_USERNAME: ${UNMANIC_CENTRAL_POSTGRES_USERNAME:?}
+      UNMANIC_CENTRAL_POSTGRES_PASSWORD: ${UNMANIC_CENTRAL_POSTGRES_PASSWORD:?}
+      UNMANIC_CENTRAL_POSTGRES_HOST: ${UNMANIC_CENTRAL_POSTGRES_HOST:-postgres}
+      UNMANIC_CENTRAL_POSTGRES_DB: ${UNMANIC_CENTRAL_POSTGRES_DB:-unmanic}
+
+    # VOLUMES:
+    volumes:
+      - type: bind
+        source: ${DATA_PATH:?}
+        target: /config/
+
+  postgres:
+    image: postgres:17-bookworm
+    user: ${PUID:-1000}:${PGID:-1000}
+    healthcheck:
+      test:
+        ['CMD', 'pg_isready', '-U', '${UNMANIC_CENTRAL_POSTGRES_USERNAME:?}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+      placement:
+        constraints:
+          - ${POSTGRES_PLACEMENT_CONSTRAINT:-node.platform.os==linux}
+      resources:
+        limits:
+          memory: 1G
+
+    # NETWORK:
+    networks:
+      - private-net
+    ports:
+      - target: 5432
+        published: ${UNMANIC_CENTRAL_POSTGRES_PORT:-5432}
+        protocol: tcp
+        mode: host
+
+    # ENVIRONMENT:
+    environment:
+      POSTGRES_DB: unmanic
+      POSTGRES_USER: ${UNMANIC_CENTRAL_POSTGRES_USERNAME:?}
+      POSTGRES_PASSWORD: ${UNMANIC_CENTRAL_POSTGRES_PASSWORD:?}
+
+    # VOLUMES:
+    volumes:
+      - type: bind
+        source: ${DATA_PATH:?}/postgresql
+        target: /var/lib/postgresql/data
